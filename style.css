@@ -9,13 +9,96 @@ h1 {
   color: #333;
 }
 
+.escondido {
+  display: none;
+}
+
+#tela-inicial {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+#tela-inicial p {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+#escolha {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.btn-simbolo {
+  width: 80px;
+    height: 80px;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: 3px solid #333;
+  background-color: white;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-simbolo.selecionado {
+  background-color: #333;
+  color: white;
+}
+
+#btn-comecar {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+#btn-comecar:not([disabled]) {
+  opacity: 1;
+}
+
+#placar {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  background-color: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  max-width: 360px;
+  margin: 0 auto 16px auto;
+}
+
+.placar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.placar-item span:first-child {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.placar-item span:last-child {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
 #tabuleiro {
   display: grid;
   grid-template-columns: repeat(3, 100px);
   grid-template-rows: repeat(3, 100px);
   gap: 8px;
   justify-content: center;
-  margin: 20px auto;
+  margin: 16px auto;
 }
 
 .celula {
@@ -27,10 +110,15 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.15s;
 }
 
 .celula:hover {
   background-color: #e0e0e0;
+}
+
+.celula.vencedora {
+  background-color: #ffd700;
 }
 
 #status {
@@ -38,17 +126,34 @@ h1 {
   margin: 10px 0;
 }
 
-#reiniciar {
+#botoes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   margin-top: 10px;
+}
+
+#botoes button {
   padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
-  background-color: #333;
-  color: white;
   border: none;
   border-radius: 5px;
+  color: white;
+}
+
+#reiniciar {
+  background-color: #333;
 }
 
 #reiniciar:hover {
   background-color: #555;
+}
+
+#menu {
+  background-color: #888;
+}
+
+#menu:hover {
+  background-color: #aaa;
 }
