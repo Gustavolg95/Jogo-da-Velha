@@ -19,11 +19,19 @@
             <button class="btn-simbolo" id="escolher-x">X</button>
             <button class="btn-simbolo" id="escolher-o">O</button>
         </div>
-        <p>Escolha o nível:</p>
+        <p>Escolha o tamanho do tabuleiro:</p>
         <div id="escolha-nivel">
-            <button class="btn-nivel" id="nivel-facil">Fácil</button>
-            <button class="btn-nivel" id="nivel-medio">Médio</button>
-            <button class="btn-nivel" id="nivel-dificil">Difícil</button>
+            <button class="btn-nivel" id="nivel-facil">3x3</button>
+            <button class="btn-nivel" id="nivel-medio">4x4</button>
+            <button class="btn-nivel" id="nivel-dificil">5x5</button>
+        </div>
+
+        <!-- Dificuldade aparece só depois de escolher o tamanho (e modo IA) -->
+        <p id="label-dificuldade" class="escondido">Escolha a dificuldade:</p>
+        <div id="escolha-dificuldade" class="escondido">
+            <button class="btn-dific" id="dific-facil">Fácil</button>
+            <button class="btn-dific" id="dific-medio">Médio</button>
+            <button class="btn-dific" id="dific-dificil">Difícil</button>
         </div>
         <button id="btn-comecar" disabled>Começar Jogo</button>
     </div>
