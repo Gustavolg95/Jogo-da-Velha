@@ -23,6 +23,7 @@ h1 {
   margin-bottom: 10px;
 }
 
+#escolha-modo,
 #escolha {
   display: flex;
   justify-content: center;
@@ -38,6 +39,12 @@ h1 {
   flex-wrap: wrap;
 }
 
+.btn-modo.selecionado {
+  background-color: #333;
+  color: white;
+}
+
+.btn-modo,
 .btn-simbolo,
 .btn-nivel {
   width: 100px;
@@ -71,6 +78,12 @@ h1 {
 
 #btn-comecar:not([disabled]) {
   opacity: 1;
+}
+
+.btn-modo,
+.btn-nivel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #tabuleiro {

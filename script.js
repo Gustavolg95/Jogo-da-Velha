@@ -6,6 +6,8 @@ let tamanhoTabuleiro = 3;
 let combinacoesVencedoras = [];
 let jogoAtivo = true;
 let pontos = { X: 0, O: 0, empate: 0 };
+let simboloIA = ""; // será "X" ou "O", o oposto do jogador
+let modoJogo = ""; // "ia" ou "2p"
 
 const telaInicial   = document.getElementById("tela-inicial");
 const telaJogo      = document.getElementById("tela-jogo");
@@ -24,9 +26,12 @@ const pontosO       = document.getElementById("pontos-o");
 const pontosEmpate  = document.getElementById("pontos-empate");
 const nomeJogador1  = document.getElementById("nome-jogador1");
 const nomeJogador2  = document.getElementById("nome-jogador2");
+const btnModoIA = document.getElementById("modo-ia");
+const btnModo2P = document.getElementById("modo-2p");
 
 function atualizarBotaoComecar() {
-  btnComecar.disabled = !(simboloEscolhido && nivelEscolhido);
+  const nivelOk = modoJogo === "2p" || nivelEscolhido !== "";
+  btnComecar.disabled = !(modoJogo && simboloEscolhido && nivelOk);
 }
 
 function limparSelecaoNivel() {
@@ -34,6 +39,29 @@ function limparSelecaoNivel() {
   btnNivelMedio.classList.remove("selecionado");
   btnNivelDificil.classList.remove("selecionado");
 }
+
+btnModoIA.addEventListener("click", () => {
+  modoJogo = "ia";
+  btnModoIA.classList.add("selecionado");
+  btnModo2P.classList.remove("selecionado");
+
+  // Mostra as opções de nível (só faz sentido contra IA)
+  document.getElementById("escolha-nivel").style.display = "flex";
+
+  atualizarBotaoComecar();
+});
+
+btnModo2P.addEventListener("click", () => {
+  modoJogo = "2p";
+  btnModo2P.classList.add("selecionado");
+  btnModoIA.classList.remove("selecionado");
+
+  // Esconde e ignora o nível no modo 2 jogadores
+  document.getElementById("escolha-nivel").style.display = "none";
+  nivelEscolhido = "facil"; // valor padrão para não travar o botão Começar
+
+  atualizarBotaoComecar();
+});
 
 btnEscolherX.addEventListener("click", () => {
   simboloEscolhido = "X";
@@ -73,6 +101,7 @@ btnNivelDificil.addEventListener("click", () => {
 btnComecar.addEventListener("click", () => {
   nomeJogador1.textContent = `Você (${simboloEscolhido})`;
   nomeJogador2.textContent = `Adversário (${simboloEscolhido === "X" ? "O" : "X"})`;
+  simboloIA = simboloEscolhido === "X" ? "O" : "X";
 
   telaInicial.classList.add("escondido");
   telaJogo.classList.remove("escondido");
@@ -202,6 +231,15 @@ tabuleiroElement.addEventListener("click", event => {
 
   jogadorAtual = jogadorAtual === "X" ? "O" : "X";
   status.textContent = `Vez do jogador ${jogadorAtual}`;
+
+  // Se for modo IA e agora é a vez da IA, ela joga
+  if (modoJogo === "ia" && jogadorAtual === simboloIA) {
+    jogoAtivo = false; // trava o tabuleiro enquanto a IA "pensa"
+    setTimeout(() => {
+      jogadaIA();
+      jogoAtivo = true;
+    }, 400); // pequeno delay para parecer mais natural
+  }
 });
 
 btnReiniciar.addEventListener("click", () => {
@@ -219,3 +257,148 @@ btnMenu.addEventListener("click", () => {
   telaJogo.classList.add("escondido");
   telaInicial.classList.remove("escondido");
 });
+
+// ══════════════════════════════
+// INTELIGÊNCIA ARTIFICIAL
+// ══════════════════════════════
+
+function jogadaIA() {
+  let index;
+
+  if (nivelEscolhido === "facil") {
+    index = jogadaAleatoria();
+  } else if (nivelEscolhido === "medio") {
+    index = jogadaMedia();
+  } else {
+    index = jogadaMinimax();
+  }
+
+  if (index === null || index === undefined) return;
+
+  tabuleiro[index] = simboloIA;
+  atualizarCelula(index);
+
+  const combinacaoVencedora = verificarVitoria();
+
+  if (combinacaoVencedora) {
+    marcarVencedora(combinacaoVencedora);
+    status.textContent = `Jogador ${simboloIA} venceu! 🎉`;
+    pontos[simboloIA]++;
+    atualizarPlacar();
+    jogoAtivo = false;
+    return;
+  }
+
+  if (tabuleiro.every(casa => casa !== "")) {
+    status.textContent = "Empate! 🤝";
+    pontos.empate++;
+    atualizarPlacar();
+    jogoAtivo = false;
+    return;
+  }
+
+  jogadorAtual = simboloEscolhido; // volta a vez para o humano
+  status.textContent = `Vez do jogador ${jogadorAtual}`;
+  jogoAtivo = true;
+}
+
+// ── Nível Fácil: posição aleatória ──
+function jogadaAleatoria() {
+  const livres = tabuleiro
+    .map((val, i) => val === "" ? i : null)
+    .filter(i => i !== null);
+
+  if (livres.length === 0) return null;
+
+  return livres[Math.floor(Math.random() * livres.length)];
+}
+
+// ── Nível Médio: vence se puder, bloqueia se precisar, senão aleatório ──
+function jogadaMedia() {
+  // Tenta vencer
+  const vitoria = encontrarJogadaVencedora(simboloIA);
+  if (vitoria !== null) return vitoria;
+
+  // Tenta bloquear o jogador humano
+  const bloqueio = encontrarJogadaVencedora(simboloEscolhido);
+  if (bloqueio !== null) return bloqueio;
+
+  // Senão, aleatório
+  return jogadaAleatoria();
+}
+
+// Acha uma posição que complete uma combinação vencedora para o símbolo dado
+function encontrarJogadaVencedora(simbolo) {
+  for (const combinacao of combinacoesVencedoras) {
+    const valores = combinacao.map(i => tabuleiro[i]);
+    const qtdSimbolo = valores.filter(v => v === simbolo).length;
+    const qtdVazio   = valores.filter(v => v === "").length;
+
+    // Se tiver (tamanho - 1) símbolos e 1 vazio, pode completar
+    if (qtdSimbolo === combinacao.length - 1 && qtdVazio === 1) {
+      return combinacao[valores.indexOf("")];
+    }
+  }
+  return null;
+}
+
+// ── Nível Difícil: algoritmo Minimax ──
+function jogadaMinimax() {
+  // Minimax só é viável no 3x3
+  if (tamanhoTabuleiro > 3) return jogadaMedia();
+
+  let melhorPontuacao = -Infinity;
+  let melhorIndex = null;
+
+  for (let i = 0; i < tabuleiro.length; i++) {
+    if (tabuleiro[i] !== "") continue;
+
+    tabuleiro[i] = simboloIA;
+    const pontuacao = minimax(tabuleiro, 0, false);
+    tabuleiro[i] = "";
+
+    if (pontuacao > melhorPontuacao) {
+      melhorPontuacao = pontuacao;
+      melhorIndex = i;
+    }
+  }
+
+  return melhorIndex;
+}
+
+function minimax(tab, profundidade, isMaximizando) {
+  // Verifica se alguém ganhou
+  for (const combinacao of combinacoesVencedoras) {
+    const primeiro = tab[combinacao[0]];
+    if (!primeiro) continue;
+    if (combinacao.every(i => tab[i] === primeiro)) {
+      // IA ganhou = positivo, humano ganhou = negativo
+      return primeiro === simboloIA ? 10 - profundidade : profundidade - 10;
+    }
+  }
+
+  // Empate
+  if (tab.every(c => c !== "")) return 0;
+
+  if (isMaximizando) {
+    // Vez da IA — quer maximizar
+    let melhor = -Infinity;
+    for (let i = 0; i < tab.length; i++) {
+      if (tab[i] !== "") continue;
+      tab[i] = simboloIA;
+      melhor = Math.max(melhor, minimax(tab, profundidade + 1, false));
+      tab[i] = "";
+    }
+    return melhor;
+  } else {
+    // Vez do humano — quer minimizar
+    let melhor = Infinity;
+    for (let i = 0; i < tab.length; i++) {
+      if (tab[i] !== "") continue;
+      tab[i] = simboloEscolhido;
+      melhor = Math.min(melhor, minimax(tab, profundidade + 1, true));
+      tab[i] = "";
+    }
+    return melhor;
+  }
+}
