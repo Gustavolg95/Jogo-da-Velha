@@ -7,22 +7,53 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Jogo da Velha</h1>
-    <p id="status">Vez do jogador X</p>
-
-    <div id="tabuleiro">
-        <div class="celula" data-index="0"></div>
-        <div class="celula" data-index="1"></div>
-        <div class="celula" data-index="2"></div>
-        <div class="celula" data-index="3"></div>
-        <div class="celula" data-index="4"></div>
-        <div class="celula" data-index="5"></div>
-        <div class="celula" data-index="6"></div>
-        <div class="celula" data-index="7"></div>
-        <div class="celula" data-index="8"></div>
+    <div id="tela-inicial">
+        <h1>Jogo da Velha</h1>
+        <p>Escolha seu símbolo:</p>
+        <div id="escolha">
+            <button class="btn-simbolo" id="escolher-x">X</button>
+            <button class="btn-simbolo" id="escolher-o">O</button>
+        </div>
+        <button id="btn-comecar" disabled>Começar Jogo</button>
     </div>
 
-    <button id="reiniciar">Reiniciar</button>
+    <div id="tela-jogo" class="escondido">
+        <h1>Jogo da Velha</h1>
+
+        <div id="placar">
+            <div class="placar-item">
+                <span id="nome-jogador1">Jogador X</span>
+                <span id="pontos-x">0</span>
+            </div>
+            <div class="placar-item">
+                <span>Empates</span>
+                <span id="pontos-empate">0</span>
+            </div>
+            <div class="placar-item">
+                <span id="nome-jogador2">Jogador O</span>
+                <span id="pontos-o">0</span>
+            </div>
+        </div>
+
+        <p id="status">Vez do jogador X</p>
+
+        <div id="tabuleiro">
+            <div class="celula" data-index="0"></div>
+            <div class="celula" data-index="1"></div>
+            <div class="celula" data-index="2"></div>
+            <div class="celula" data-index="3"></div>
+            <div class="celula" data-index="4"></div>
+            <div class="celula" data-index="5"></div>
+            <div class="celula" data-index="6"></div>
+            <div class="celula" data-index="7"></div>
+            <div class="celula" data-index="8"></div>
+        </div>
+
+        <div id="botoes">
+            <button id="reiniciar">Reiniciar Partida</button>
+            <button id="menu">Voltar ao Menu</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
