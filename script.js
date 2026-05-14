@@ -2,6 +2,7 @@ let tabuleiro = [];
 let jogadorAtual = "X";
 let simboloEscolhido = "";
 let nivelEscolhido = "";
+let dificuldadeEscolhida = ""; // "facil", "medio" ou "dificil"
 let tamanhoTabuleiro = 3;
 let combinacoesVencedoras = [];
 let jogoAtivo = true;
@@ -28,9 +29,14 @@ const nomeJogador1  = document.getElementById("nome-jogador1");
 const nomeJogador2  = document.getElementById("nome-jogador2");
 const btnModoIA = document.getElementById("modo-ia");
 const btnModo2P = document.getElementById("modo-2p");
+const btnDificFacil   = document.getElementById("dific-facil");
+const btnDificMedio   = document.getElementById("dific-medio");
+const btnDificDificil = document.getElementById("dific-dificil");
+const labelDificuldade       = document.getElementById("label-dificuldade");
+const escolhaDificuldade     = document.getElementById("escolha-dificuldade");
 
 function atualizarBotaoComecar() {
-  const nivelOk = modoJogo === "2p" || nivelEscolhido !== "";
+  const nivelOk = modoJogo === "2p" || (nivelEscolhido !== "" && dificuldadeEscolhida !== "");
   btnComecar.disabled = !(modoJogo && simboloEscolhido && nivelOk);
 }
 
@@ -38,7 +44,71 @@ function limparSelecaoNivel() {
   btnNivelFacil.classList.remove("selecionado");
   btnNivelMedio.classList.remove("selecionado");
   btnNivelDificil.classList.remove("selecionado");
+  // Reseta a dificuldade ao trocar de tamanho
+  dificuldadeEscolhida = "";
+  btnDificFacil.classList.remove("selecionado");
+  btnDificMedio.classList.remove("selecionado");
+  btnDificDificil.classList.remove("selecionado");
 }
+
+btnNivelFacil.addEventListener("click", () => {
+  nivelEscolhido = "facil"; // 3x3
+  limparSelecaoNivel();
+  btnNivelFacil.classList.add("selecionado");
+  mostrarDificuldade();
+  atualizarBotaoComecar();
+});
+
+btnNivelMedio.addEventListener("click", () => {
+  nivelEscolhido = "medio"; // 4x4
+  limparSelecaoNivel();
+  btnNivelMedio.classList.add("selecionado");
+  mostrarDificuldade();
+  atualizarBotaoComecar();
+});
+
+btnNivelDificil.addEventListener("click", () => {
+  nivelEscolhido = "dificil"; // 5x5
+  limparSelecaoNivel();
+  btnNivelDificil.classList.add("selecionado");
+  mostrarDificuldade();
+  atualizarBotaoComecar();
+});
+
+// Mostra os botões de dificuldade só se for modo IA
+function mostrarDificuldade() {
+  if (modoJogo === "ia") {
+    labelDificuldade.classList.remove("escondido");
+    escolhaDificuldade.classList.remove("escondido");
+  }
+}
+
+function limparSelecaoDificuldade() {
+  btnDificFacil.classList.remove("selecionado");
+  btnDificMedio.classList.remove("selecionado");
+  btnDificDificil.classList.remove("selecionado");
+}
+
+btnDificFacil.addEventListener("click", () => {
+  dificuldadeEscolhida = "facil";
+  limparSelecaoDificuldade();
+  btnDificFacil.classList.add("selecionado");
+  atualizarBotaoComecar();
+});
+
+btnDificMedio.addEventListener("click", () => {
+  dificuldadeEscolhida = "medio";
+  limparSelecaoDificuldade();
+  btnDificMedio.classList.add("selecionado");
+  atualizarBotaoComecar();
+});
+
+btnDificDificil.addEventListener("click", () => {
+  dificuldadeEscolhida = "dificil";
+  limparSelecaoDificuldade();
+  btnDificDificil.classList.add("selecionado");
+  atualizarBotaoComecar();
+});
 
 btnModoIA.addEventListener("click", () => {
   modoJogo = "ia";
@@ -254,6 +324,11 @@ btnMenu.addEventListener("click", () => {
   btnEscolherO.classList.remove("selecionado");
   btnComecar.disabled = true;
 
+  labelDificuldade.classList.add("escondido");
+  escolhaDificuldade.classList.add("escondido");
+  btnDificFacil.classList.remove("selecionado");
+  btnDificMedio.classList.remove("selecionado");
+  btnDificDificil.classList.remove("selecionado");
   telaJogo.classList.add("escondido");
   telaInicial.classList.remove("escondido");
 });
@@ -265,9 +340,9 @@ btnMenu.addEventListener("click", () => {
 function jogadaIA() {
   let index;
 
-  if (nivelEscolhido === "facil") {
+  if (dificuldadeEscolhida === "facil") {
     index = jogadaAleatoria();
-  } else if (nivelEscolhido === "medio") {
+  } else if (dificuldadeEscolhida === "medio") {
     index = jogadaMedia();
   } else {
     index = jogadaMinimax();
