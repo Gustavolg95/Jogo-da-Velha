@@ -1,26 +1,21 @@
-let tabuleiro = ["", "", "", "", "", "", "", "", ""];
+let tabuleiro = [];
 let jogadorAtual = "X";
 let simboloEscolhido = "";
+let nivelEscolhido = "";
+let tamanhoTabuleiro = 3;
+let combinacoesVencedoras = [];
 let jogoAtivo = true;
 let pontos = { X: 0, O: 0, empate: 0 };
-
-const combinacoesVencedoras = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
 
 const telaInicial   = document.getElementById("tela-inicial");
 const telaJogo      = document.getElementById("tela-jogo");
 const btnEscolherX  = document.getElementById("escolher-x");
 const btnEscolherO  = document.getElementById("escolher-o");
+const btnNivelFacil = document.getElementById("nivel-facil");
+const btnNivelMedio = document.getElementById("nivel-medio");
+const btnNivelDificil = document.getElementById("nivel-dificil");
 const btnComecar    = document.getElementById("btn-comecar");
-const celulas       = document.querySelectorAll(".celula");
+const tabuleiroElement = document.getElementById("tabuleiro");
 const status        = document.getElementById("status");
 const btnReiniciar  = document.getElementById("reiniciar");
 const btnMenu       = document.getElementById("menu");
@@ -30,22 +25,52 @@ const pontosEmpate  = document.getElementById("pontos-empate");
 const nomeJogador1  = document.getElementById("nome-jogador1");
 const nomeJogador2  = document.getElementById("nome-jogador2");
 
+function atualizarBotaoComecar() {
+  btnComecar.disabled = !(simboloEscolhido && nivelEscolhido);
+}
+
+function limparSelecaoNivel() {
+  btnNivelFacil.classList.remove("selecionado");
+  btnNivelMedio.classList.remove("selecionado");
+  btnNivelDificil.classList.remove("selecionado");
+}
+
 btnEscolherX.addEventListener("click", () => {
   simboloEscolhido = "X";
   btnEscolherX.classList.add("selecionado");
   btnEscolherO.classList.remove("selecionado");
-  btnComecar.disabled = false;
+  atualizarBotaoComecar();
 });
 
 btnEscolherO.addEventListener("click", () => {
   simboloEscolhido = "O";
   btnEscolherO.classList.add("selecionado");
   btnEscolherX.classList.remove("selecionado");
-  btnComecar.disabled = false;
+  atualizarBotaoComecar();
+});
+
+btnNivelFacil.addEventListener("click", () => {
+  nivelEscolhido = "facil";
+  limparSelecaoNivel();
+  btnNivelFacil.classList.add("selecionado");
+  atualizarBotaoComecar();
+});
+
+btnNivelMedio.addEventListener("click", () => {
+  nivelEscolhido = "medio";
+  limparSelecaoNivel();
+  btnNivelMedio.classList.add("selecionado");
+  atualizarBotaoComecar();
+});
+
+btnNivelDificil.addEventListener("click", () => {
+  nivelEscolhido = "dificil";
+  limparSelecaoNivel();
+  btnNivelDificil.classList.add("selecionado");
+  atualizarBotaoComecar();
 });
 
 btnComecar.addEventListener("click", () => {
-
   nomeJogador1.textContent = `Você (${simboloEscolhido})`;
   nomeJogador2.textContent = `Adversário (${simboloEscolhido === "X" ? "O" : "X"})`;
 
@@ -56,71 +81,128 @@ btnComecar.addEventListener("click", () => {
 });
 
 function iniciarJogo() {
-  tabuleiro = ["", "", "", "", "", "", "", "", ""];
-  jogadorAtual = "X";
+  tamanhoTabuleiro = nivelEscolhido === "medio" ? 4 : nivelEscolhido === "dificil" ? 5 : 3;
+  tabuleiro = Array(tamanhoTabuleiro * tamanhoTabuleiro).fill("");
+  jogadorAtual = simboloEscolhido || "X";
   jogoAtivo = true;
   status.textContent = `Vez do jogador ${jogadorAtual}`;
-  celulas.forEach(c => {
-    c.textContent = "";
-    c.classList.remove("vencedora");
-  });
+  combinacoesVencedoras = gerarCombinacoesVencedoras(tamanhoTabuleiro);
+  gerarTabuleiro();
+  atualizarPlacar();
 }
 
-celulas.forEach(celula => {
-  celula.addEventListener("click", () => {
-    const index = celula.getAttribute("data-index");
+function gerarTabuleiro() {
+  const tamanhoCelula = tamanhoTabuleiro === 3 ? 100 : tamanhoTabuleiro === 4 ? 85 : 70;
+  tabuleiroElement.style.gridTemplateColumns = `repeat(${tamanhoTabuleiro}, ${tamanhoCelula}px)`;
+  tabuleiroElement.style.gridTemplateRows = `repeat(${tamanhoTabuleiro}, ${tamanhoCelula}px)`;
+  tabuleiroElement.innerHTML = "";
 
-    if (tabuleiro[index] !== "" || !jogoAtivo) return;
+  for (let i = 0; i < tabuleiro.length; i++) {
+    const celula = document.createElement("div");
+    celula.classList.add("celula");
+    celula.dataset.index = i.toString();
+    tabuleiroElement.appendChild(celula);
+  }
+}
 
-    tabuleiro[index] = jogadorAtual;
-    celula.textContent = jogadorAtual;
+function gerarCombinacoesVencedoras(tamanho) {
+  const combinacoes = [];
 
-    const combinacaoVencedora = verificarVitoria();
-
-    if (combinacaoVencedora) {
-      combinacaoVencedora.forEach(i => {
-        celulas[i].classList.add("vencedora");
-      });
-
-      status.textContent = `Jogador ${jogadorAtual} venceu! 🎉`;
-      pontos[jogadorAtual]++;
-      atualizarPlacar();
-      jogoAtivo = false;
-      return;
+  for (let linha = 0; linha < tamanho; linha++) {
+    const linhaAtual = [];
+    for (let coluna = 0; coluna < tamanho; coluna++) {
+      linhaAtual.push(linha * tamanho + coluna);
     }
+    combinacoes.push(linhaAtual);
+  }
 
-    if (tabuleiro.every(casa => casa !== "")) {
-      status.textContent = "Empate! 🤝";
-      pontos.empate++;
-      atualizarPlacar();
-      jogoAtivo = false;
-      return;
+  for (let coluna = 0; coluna < tamanho; coluna++) {
+    const colunaAtual = [];
+    for (let linha = 0; linha < tamanho; linha++) {
+      colunaAtual.push(linha * tamanho + coluna);
     }
+    combinacoes.push(colunaAtual);
+  }
 
-    jogadorAtual = jogadorAtual === "X" ? "O" : "X";
-    status.textContent = `Vez do jogador ${jogadorAtual}`;
-  });
-});
+  const diagonalPrincipal = [];
+  const diagonalSecundaria = [];
+
+  for (let i = 0; i < tamanho; i++) {
+    diagonalPrincipal.push(i * tamanho + i);
+    diagonalSecundaria.push(i * tamanho + (tamanho - 1 - i));
+  }
+
+  combinacoes.push(diagonalPrincipal, diagonalSecundaria);
+  return combinacoes;
+}
+
+function atualizarPlacar() {
+  if (simboloEscolhido === "O") {
+    pontosX.textContent = pontos.O;
+    pontosO.textContent = pontos.X;
+  } else {
+    pontosX.textContent = pontos.X;
+    pontosO.textContent = pontos.O;
+  }
+  pontosEmpate.textContent = pontos.empate;
+}
 
 function verificarVitoria() {
   for (const combinacao of combinacoesVencedoras) {
-    const [a, b, c] = combinacao;
-    if (
-      tabuleiro[a] !== "" &&
-      tabuleiro[a] === tabuleiro[b] &&
-      tabuleiro[b] === tabuleiro[c]
-    ) {
-      return combinacao; 
+    const primeiro = tabuleiro[combinacao[0]];
+    if (!primeiro) continue;
+    if (combinacao.every(index => tabuleiro[index] === primeiro)) {
+      return combinacao;
     }
   }
   return null;
 }
 
-function atualizarPlacar() {
-  pontosX.textContent = pontos.X;
-  pontosO.textContent = pontos.O;
-  pontosEmpate.textContent = pontos.empate;
+function atualizarCelula(index) {
+  const celula = tabuleiroElement.querySelector(`.celula[data-index="${index}"]`);
+  if (celula) celula.textContent = tabuleiro[index];
 }
+
+function marcarVencedora(combinacao) {
+  combinacao.forEach(index => {
+    const celula = tabuleiroElement.querySelector(`.celula[data-index="${index}"]`);
+    if (celula) celula.classList.add("vencedora");
+  });
+}
+
+tabuleiroElement.addEventListener("click", event => {
+  if (!jogoAtivo) return;
+  const celula = event.target.closest(".celula");
+  if (!celula) return;
+
+  const index = Number(celula.dataset.index);
+  if (tabuleiro[index] !== "") return;
+
+  tabuleiro[index] = jogadorAtual;
+  atualizarCelula(index);
+
+  const combinacaoVencedora = verificarVitoria();
+
+  if (combinacaoVencedora) {
+    marcarVencedora(combinacaoVencedora);
+    status.textContent = `Jogador ${jogadorAtual} venceu! 🎉`;
+    pontos[jogadorAtual]++;
+    atualizarPlacar();
+    jogoAtivo = false;
+    return;
+  }
+
+  if (tabuleiro.every(casa => casa !== "")) {
+    status.textContent = "Empate! 🤝";
+    pontos.empate++;
+    atualizarPlacar();
+    jogoAtivo = false;
+    return;
+  }
+
+  jogadorAtual = jogadorAtual === "X" ? "O" : "X";
+  status.textContent = `Vez do jogador ${jogadorAtual}`;
+});
 
 btnReiniciar.addEventListener("click", () => {
   iniciarJogo();
