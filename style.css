@@ -30,19 +30,29 @@ h1 {
   margin-bottom: 20px;
 }
 
-.btn-simbolo {
-  width: 80px;
-    height: 80px;
-  font-size: 2rem;
+#escolha-nivel {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-simbolo,
+.btn-nivel {
+  width: 100px;
+  height: 70px;
+  font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
   border: 3px solid #333;
   background-color: white;
   border-radius: 10px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.btn-simbolo.selecionado {
+.btn-simbolo.selecionado,
+.btn-nivel.selecionado {
   background-color: #333;
   color: white;
 }
@@ -61,6 +71,13 @@ h1 {
 
 #btn-comecar:not([disabled]) {
   opacity: 1;
+}
+
+#tabuleiro {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  margin: 16px auto;
 }
 
 #placar {
