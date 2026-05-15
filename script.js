@@ -77,9 +77,12 @@ btnNivelDificil.addEventListener("click", () => {
 
 // Mostra os botões de dificuldade só se for modo IA
 function mostrarDificuldade() {
-  if (modoJogo === "ia") {
+  if (modoJogo === "ia" && nivelEscolhido !== "") {
     labelDificuldade.classList.remove("escondido");
     escolhaDificuldade.classList.remove("escondido");
+  } else {
+    labelDificuldade.classList.add("escondido");
+    escolhaDificuldade.classList.add("escondido");
   }
 }
 
@@ -117,6 +120,16 @@ btnModoIA.addEventListener("click", () => {
 
   // Mostra as opções de nível (só faz sentido contra IA)
   document.getElementById("escolha-nivel").style.display = "flex";
+  
+  // Reseta o tamanho e dificuldade ao trocar de modo
+  nivelEscolhido = "";
+  dificuldadeEscolhida = "";
+  limparSelecaoNivel();
+  limparSelecaoDificuldade();
+
+  // Esconde dificuldade até o jogador escolher o tamanho
+  labelDificuldade.classList.add("escondido");
+  escolhaDificuldade.classList.add("escondido");
 
   atualizarBotaoComecar();
 });
@@ -127,8 +140,16 @@ btnModo2P.addEventListener("click", () => {
   btnModoIA.classList.remove("selecionado");
 
   // Esconde e ignora o nível no modo 2 jogadores
-  document.getElementById("escolha-nivel").style.display = "none";
-  nivelEscolhido = "facil"; // valor padrão para não travar o botão Começar
+  document.getElementById("escolha-nivel").style.display = "flex";
+
+  // Esconde a dificuldade (não faz sentido no 2 jogadores)
+  labelDificuldade.classList.add("escondido");
+  escolhaDificuldade.classList.add("escondido");
+  dificuldadeEscolhida = ""; // reseta dificuldade
+  limparSelecaoDificuldade();
+
+  nivelEscolhido = "";
+  limparSelecaoNivel();
 
   atualizarBotaoComecar();
 });
@@ -179,15 +200,30 @@ btnComecar.addEventListener("click", () => {
   iniciarJogo();
 });
 
+let ultimoVencedor = ""; // guarda quem venceu a última rodada
+
 function iniciarJogo() {
   tamanhoTabuleiro = nivelEscolhido === "medio" ? 4 : nivelEscolhido === "dificil" ? 5 : 3;
   tabuleiro = Array(tamanhoTabuleiro * tamanhoTabuleiro).fill("");
-  jogadorAtual = simboloEscolhido || "X";
+
+  // Se houve um vencedor na rodada anterior, ele começa
+  jogadorAtual = ultimoVencedor || simboloEscolhido || "X";
+
   jogoAtivo = true;
   status.textContent = `Vez do jogador ${jogadorAtual}`;
   combinacoesVencedoras = gerarCombinacoesVencedoras(tamanhoTabuleiro);
   gerarTabuleiro();
   atualizarPlacar();
+
+
+  // Se for modo IA e a IA começa a rodada, ela joga automaticamente
+  if (modoJogo === "ia" && jogadorAtual === simboloIA) {
+    jogoAtivo = false;
+    setTimeout(() => {
+      jogadaIA();
+      jogoAtivo = true;
+    }, 600); // delay um pouco maior para o jogador perceber que a rodada começou
+  }
 }
 
 function gerarTabuleiro() {
@@ -286,6 +322,7 @@ tabuleiroElement.addEventListener("click", event => {
     marcarVencedora(combinacaoVencedora);
     status.textContent = `Jogador ${jogadorAtual} venceu! 🎉`;
     pontos[jogadorAtual]++;
+    ultimoVencedor = jogadorAtual; // salva o vencedor
     atualizarPlacar();
     jogoAtivo = false;
     return;
@@ -360,6 +397,8 @@ function jogadaIA() {
     status.textContent = `Jogador ${simboloIA} venceu! 🎉`;
     pontos[simboloIA]++;
     atualizarPlacar();
+    ultimoVencedor = simboloIA;
+    atualizarPlacar();
     jogoAtivo = false;
     return;
   }
@@ -367,6 +406,7 @@ function jogadaIA() {
   if (tabuleiro.every(casa => casa !== "")) {
     status.textContent = "Empate! 🤝";
     pontos.empate++;
+    ultimoVencedor = "";
     atualizarPlacar();
     jogoAtivo = false;
     return;
